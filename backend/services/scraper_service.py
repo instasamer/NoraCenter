@@ -8,20 +8,26 @@ from sqlalchemy.orm import Session
 
 from backend.models.opportunity import Category, Discipline, Opportunity
 from backend.scrapers.base import RawOpportunity
+from backend.scrapers.bdns_scraper import BDNSScraper
+from backend.scrapers.boe_api_scraper import BOEAPIScraper
 from backend.scrapers.boe_scraper import BOEScraper
 from backend.scrapers.comunidades_scraper import ComunidadesScraper
 from backend.scrapers.cultura_gob import CulturaGobScraper
 from backend.scrapers.fundaciones_scraper import FundacionesScraper
 from backend.scrapers.rss_scraper import RSSScraper
+from backend.scrapers.wordpress_scraper import WordPressScraper
 
 logger = logging.getLogger(__name__)
 
 ALL_SCRAPERS = [
+    BDNSScraper,       # Highest priority: all public subsidies via structured portal
+    BOEAPIScraper,     # Official BOE API (JSON)
     RSSScraper,
     CulturaGobScraper,
     BOEScraper,
     FundacionesScraper,
     ComunidadesScraper,
+    WordPressScraper,  # WordPress-based art sites (Exibart, masdearte, PAC, etc.)
 ]
 
 CATEGORY_MAP = {v.value: v for v in Category}
