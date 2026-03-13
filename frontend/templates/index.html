@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoraCenter - Oportunidades para Artistas en España</title>
+    <meta name="description" content="Encuentra becas, residencias, convocatorias y subvenciones para artistas en España. Toda la información cultural en un solo lugar.">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">Nora<span>Center</span></h1>
+                <p class="tagline">Todas las oportunidades para artistas en España, en un solo lugar</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Search & Filters -->
+        <section class="search-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar becas, residencias, convocatorias..." autocomplete="off">
+                <button id="searchBtn" aria-label="Buscar">Buscar</button>
+            </div>
+            <div class="filters">
+                <select id="filterCategory">
+                    <option value="">Todas las categorías</option>
+                </select>
+                <select id="filterDiscipline">
+                    <option value="">Todas las disciplinas</option>
+                </select>
+                <select id="filterRegion">
+                    <option value="">Toda España</option>
+                </select>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="filterActive" checked>
+                    Solo oportunidades vigentes
+                </label>
+            </div>
+        </section>
+
+        <!-- Stats bar -->
+        <section class="stats-bar" id="statsBar">
+            <span id="statsTotal">Cargando...</span>
+        </section>
+
+        <!-- Results -->
+        <section class="results" id="results">
+            <div class="loading" id="loading">Buscando oportunidades...</div>
+        </section>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>NoraCenter &mdash; Agregador de oportunidades culturales en España</p>
+            <p class="footer-note">
+                La información se recopila automáticamente de fuentes públicas oficiales.
+                Verifica siempre los datos en la fuente original antes de presentar tu solicitud.
+            </p>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
