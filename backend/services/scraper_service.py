@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import re
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -44,10 +45,37 @@ def _map_discipline(raw: str) -> Discipline:
     return DISCIPLINE_MAP.get(raw, Discipline.MULTIDISCIPLINAR)
 
 
+# Patterns that indicate a closed/expired opportunity
+_CLOSED_PATTERNS = re.compile(
+    r'\b(cerrad[ao]|finalizada?|resuelta?|caducad[ao]|expirad[ao]|desierta?|archivad[ao])\b',
+    re.IGNORECASE,
+)
+
+# Prefixes to strip from titles (e.g. "Cerrada - Beca de arte" -> "Beca de arte")
+_TITLE_PREFIX_PATTERN = re.compile(
+    r'^(?:cerrad[ao]|finalizada?|resuelta?|caducad[ao]|expirad[ao]|archivad[ao])'
+    r'\s*[-–—:.|]\s*',
+    re.IGNORECASE,
+)
+
+
+def _is_closed_opportunity(raw: RawOpportunity) -> bool:
+    """Check if the opportunity is already marked as closed in its title."""
+    # Only check the first ~40 chars of the title to catch prefixes like
+    # "Cerrada - ...", "FINALIZADA: ..." etc.
+    title_start = raw.title[:40].lower()
+    return bool(_CLOSED_PATTERNS.search(title_start))
+
+
+def _clean_title(title: str) -> str:
+    """Remove 'Cerrada', 'Finalizada' etc. prefixes from titles."""
+    return _TITLE_PREFIX_PATTERN.sub('', title).strip()
+
+
 def _raw_to_db(raw: RawOpportunity) -> dict:
     """Convert a RawOpportunity to a dict for database insertion."""
     return {
-        "title": raw.title[:500],
+        "title": _clean_title(raw.title)[:500],
         "description": raw.description[:5000] if raw.description else "",
         "category": _map_category(raw.category),
         "discipline": _map_discipline(raw.discipline),
@@ -89,6 +117,11 @@ def store_opportunities(db: Session, raw_opps: list[RawOpportunity]) -> dict:
 
     for raw in raw_opps:
         try:
+            # Skip opportunities already marked as closed in their title
+            if _is_closed_opportunity(raw):
+                stats["skipped"] += 1
+                continue
+
             existing = (
                 db.query(Opportunity)
                 .filter(Opportunity.source_url == raw.source_url)
