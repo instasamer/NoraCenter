@@ -433,12 +433,40 @@ body {
     gap: 1rem;
 }
 
+.opp-card__header {
+    flex: 1;
+    min-width: 0;
+}
+
 .opp-card__title {
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.4;
     color: var(--text);
     margin: 0;
+}
+
+.opp-card__org {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.opp-card__location {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.opp-card__location svg {
+    flex-shrink: 0;
+    color: var(--accent);
 }
 
 .opp-card__title a {
@@ -505,6 +533,12 @@ body {
     color: var(--accent);
 }
 
+.meta-tag--funding {
+    background: #ecfdf5;
+    color: #059669;
+    font-weight: 600;
+}
+
 .opp-card__desc {
     margin-top: 8px;
     font-size: 0.85rem;
@@ -531,6 +565,13 @@ body {
     display: flex;
     align-items: center;
     gap: 4px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.opp-card__date {
+    font-size: 0.76rem;
+    color: var(--text-light);
 }
 
 .opp-card__link {

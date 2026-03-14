@@ -205,6 +205,30 @@ const DISCIPLINE_LABELS = {
     otro: 'Otro',
 };
 
+/**
+ * Build a clean, uniform summary title from the opportunity data.
+ * Instead of showing the raw scraped title (which varies wildly),
+ * we compose: "[Categoría] de [disciplina] — [organización]"
+ * Falls back to the original title if not enough data.
+ */
+function buildSummary(opp) {
+    const cat = CATEGORY_LABELS[opp.category];
+    const disc = DISCIPLINE_LABELS[opp.discipline];
+    const org = opp.organization || opp.source_name;
+
+    // If we have category + discipline + org, build a clean title
+    if (cat && disc && org) {
+        return `${cat} de ${disc}`;
+    }
+    // If we have category + org
+    if (cat && org) {
+        return `${cat} — ${org}`;
+    }
+    // Fallback: truncate the original title to keep it tidy
+    const title = opp.title || 'Sin título';
+    return title.length > 80 ? title.substring(0, 77) + '...' : title;
+}
+
 function formatDate(isoDate) {
     if (!isoDate) return null;
     const d = new Date(isoDate);
@@ -237,21 +261,35 @@ function renderResults(data) {
 
     el.innerHTML = data.results.map(opp => {
         const dl = deadlineInfo(opp.deadline);
+        const locationParts = [opp.location, opp.region].filter(Boolean);
+        const locationStr = locationParts.join(', ');
+        const summary = buildSummary(opp);
         return `
         <article class="opp-card" onclick="openDetail(${opp.id})">
             <div class="opp-card__top">
-                <h2 class="opp-card__title">${escapeHtml(opp.title)}</h2>
+                <div class="opp-card__header">
+                    <h2 class="opp-card__title">${escapeHtml(summary)}</h2>
+                    ${opp.organization ? `<span class="opp-card__org">${escapeHtml(opp.organization)}</span>` : ''}
+                </div>
                 ${dl.label ? `<span class="opp-card__badge ${dl.class}">${dl.label}</span>` : ''}
             </div>
+            ${locationStr ? `
+            <div class="opp-card__location">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                ${escapeHtml(locationStr)}
+            </div>` : ''}
             <div class="opp-card__meta">
                 ${opp.category ? `<span class="meta-tag meta-tag--category">${CATEGORY_LABELS[opp.category] || opp.category}</span>` : ''}
                 ${opp.discipline ? `<span class="meta-tag">${DISCIPLINE_LABELS[opp.discipline] || opp.discipline}</span>` : ''}
-                ${opp.region ? `<span class="meta-tag">${escapeHtml(opp.region)}</span>` : ''}
+                ${opp.funding_amount ? `<span class="meta-tag meta-tag--funding">${escapeHtml(opp.funding_amount)}</span>` : ''}
             </div>
             ${opp.description ? `<p class="opp-card__desc">${escapeHtml(opp.description)}</p>` : ''}
             <div class="opp-card__footer">
-                <span class="opp-card__source">Fuente: ${escapeHtml(opp.source_name)}</span>
-                ${opp.funding_amount ? `<span>${escapeHtml(opp.funding_amount)}</span>` : ''}
+                <span class="opp-card__source">${escapeHtml(opp.source_name)}</span>
+                <span class="opp-card__date">
+                    ${opp.publication_date ? `Publicado ${formatDate(opp.publication_date)}` : ''}
+                    ${opp.deadline ? ` · Plazo: ${formatDate(opp.deadline)}` : ''}
+                </span>
             </div>
         </article>`;
     }).join('');
