@@ -1,10 +1,10 @@
 """API routes for the NoraCenter platform."""
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
 
 from backend.models.database import get_db
@@ -54,10 +54,20 @@ def list_opportunities(
         query = query.filter(Opportunity.region.ilike(f"%{region}%"))
 
     if active_only:
+        now = datetime.utcnow()
+        recent_cutoff = now - timedelta(days=90)
         query = query.filter(
             or_(
-                Opportunity.deadline.is_(None),
-                Opportunity.deadline >= datetime.utcnow(),
+                # Has deadline and it's in the future
+                Opportunity.deadline >= now,
+                # No deadline but was scraped/published recently (last 90 days)
+                and_(
+                    Opportunity.deadline.is_(None),
+                    or_(
+                        Opportunity.publication_date >= recent_cutoff,
+                        Opportunity.scraped_at >= recent_cutoff,
+                    ),
+                ),
             )
         )
 
@@ -148,10 +158,18 @@ async def trigger_scrape(db: Session = Depends(get_db)):
 def get_stats(db: Session = Depends(get_db)):
     """Get platform statistics."""
     total = db.query(Opportunity).count()
+    now = datetime.utcnow()
+    recent_cutoff = now - timedelta(days=90)
     active = db.query(Opportunity).filter(
         or_(
-            Opportunity.deadline.is_(None),
-            Opportunity.deadline >= datetime.utcnow(),
+            Opportunity.deadline >= now,
+            and_(
+                Opportunity.deadline.is_(None),
+                or_(
+                    Opportunity.publication_date >= recent_cutoff,
+                    Opportunity.scraped_at >= recent_cutoff,
+                ),
+            ),
         )
     ).count()
     sources = db.query(Opportunity.source_name).distinct().count()
