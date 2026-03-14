@@ -16,6 +16,7 @@ from backend.scrapers.cultura_gob import CulturaGobScraper
 from backend.scrapers.fundaciones_scraper import FundacionesScraper
 from backend.scrapers.rss_scraper import RSSScraper
 from backend.scrapers.wordpress_scraper import WordPressScraper
+from backend.scrapers.nuevas_fuentes_scraper import NuevasFuentesScraper
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ ALL_SCRAPERS = [
     FundacionesScraper,
     ComunidadesScraper,
     WordPressScraper,  # WordPress-based art sites (Exibart, masdearte, PAC, etc.)
+    NuevasFuentesScraper,  # Nuevas fuentes: Injuve, SGAE, Teatros del Canal, Creative Europe, etc.
 ]
 
 CATEGORY_MAP = {v.value: v for v in Category}
