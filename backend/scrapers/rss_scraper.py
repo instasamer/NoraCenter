@@ -3,9 +3,8 @@
 import logging
 from datetime import datetime
 
-import feedparser
-
 from backend.scrapers.base import BaseScraper, RawOpportunity
+from backend.scrapers.feed_parser import parse_feed
 
 logger = logging.getLogger(__name__)
 
@@ -71,17 +70,6 @@ class RSSScraper(BaseScraper):
         ),
     ]
 
-    def _parse_date(self, entry) -> datetime | None:
-        """Parse date from a feed entry."""
-        for attr in ("published_parsed", "updated_parsed"):
-            parsed = getattr(entry, attr, None)
-            if parsed:
-                try:
-                    return datetime(*parsed[:6])
-                except (TypeError, ValueError):
-                    continue
-        return None
-
     def _is_culture_related(self, text: str) -> bool:
         """Check if text is related to culture/arts."""
         keywords = [
@@ -102,27 +90,23 @@ class RSSScraper(BaseScraper):
                 if not content:
                     continue
 
-                feed = feedparser.parse(content)
+                entries = parse_feed(content)
 
-                for entry in feed.entries:
-                    title = entry.get("title", "")
-                    summary = entry.get("summary", entry.get("description", ""))
-                    link = entry.get("link", "")
-
-                    combined_text = f"{title} {summary}"
+                for entry in entries:
+                    combined_text = f"{entry.title} {entry.summary}"
                     if not self._is_culture_related(combined_text):
                         continue
 
                     opp = RawOpportunity(
-                        title=title,
-                        description=summary,
-                        source_url=link,
+                        title=entry.title,
+                        description=entry.summary,
+                        source_url=entry.link,
                         source_name=source.name,
                         category=source.category,
                         discipline=source.discipline,
                         organization=source.organization,
                         region=source.region,
-                        publication_date=self._parse_date(entry),
+                        publication_date=entry.published,
                     )
                     results.append(opp)
 

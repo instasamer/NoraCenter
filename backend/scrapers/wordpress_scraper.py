@@ -1,15 +1,11 @@
-"""Scraper for WordPress-based art/culture sites.
-
-Many Spanish art platforms run on WordPress and expose standard RSS feeds
-at /feed/ or /category/convocatorias/feed/. This scraper leverages that.
-"""
+"""Scraper for WordPress-based art/culture sites via RSS feeds."""
 
 import logging
-from datetime import datetime
 
-import feedparser
+from bs4 import BeautifulSoup
 
 from backend.scrapers.base import BaseScraper, RawOpportunity
+from backend.scrapers.feed_parser import parse_feed
 
 logger = logging.getLogger(__name__)
 
@@ -66,16 +62,6 @@ class WordPressScraper(BaseScraper):
 
     name = "wordpress_sites"
 
-    def _parse_date(self, entry) -> datetime | None:
-        for attr in ("published_parsed", "updated_parsed"):
-            parsed = getattr(entry, attr, None)
-            if parsed:
-                try:
-                    return datetime(*parsed[:6])
-                except (TypeError, ValueError):
-                    continue
-        return None
-
     async def _scrape_site(self, site: WordPressSite) -> list[RawOpportunity]:
         results = []
 
@@ -83,30 +69,26 @@ class WordPressScraper(BaseScraper):
         if not content:
             return results
 
-        feed = feedparser.parse(content)
+        entries = parse_feed(content)
 
-        for entry in feed.entries:
-            title = entry.get("title", "")
-            link = entry.get("link", "")
-            summary = entry.get("summary", entry.get("description", ""))
-
-            if not title or not link:
+        for entry in entries:
+            if not entry.title or not entry.link:
                 continue
 
             # Strip HTML tags from summary
-            from bs4 import BeautifulSoup
-            if summary:
+            summary = entry.summary
+            if summary and "<" in summary:
                 summary = BeautifulSoup(summary, "lxml").get_text(strip=True)
 
             results.append(RawOpportunity(
-                title=title,
-                source_url=link,
+                title=entry.title,
+                source_url=entry.link,
                 source_name=site.name,
                 category=site.category,
                 discipline=site.discipline,
                 region=site.region,
                 description=summary[:500] if summary else "",
-                publication_date=self._parse_date(entry),
+                publication_date=entry.published,
             ))
 
         return results

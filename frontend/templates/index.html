@@ -5,63 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NoraCenter - Oportunidades para Artistas en España</title>
     <meta name="description" content="Encuentra becas, residencias, convocatorias y subvenciones para artistas en España. Toda la información cultural en un solo lugar.">
+    <meta property="og:title" content="NoraCenter - Oportunidades para Artistas">
+    <meta property="og:description" content="Becas, residencias, convocatorias y subvenciones para artistas en España.">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="header-content">
-                <h1 class="logo">Nora<span>Center</span></h1>
-                <p class="tagline">Todas las oportunidades para artistas en España, en un solo lugar</p>
+
+    <!-- Hero / Header -->
+    <header class="hero">
+        <div class="hero__bg"></div>
+        <div class="container hero__content">
+            <h1 class="hero__title">Nora<span>Center</span></h1>
+            <p class="hero__subtitle">El lugar donde los artistas encuentran su próxima oportunidad</p>
+            <div class="hero__search">
+                <input type="text" id="searchInput" placeholder="Buscar becas, residencias, subvenciones..." autocomplete="off">
+                <button id="searchBtn">Buscar</button>
             </div>
         </div>
     </header>
 
-    <main class="container">
-        <!-- Search & Filters -->
-        <section class="search-section">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Buscar becas, residencias, convocatorias..." autocomplete="off">
-                <button id="searchBtn" aria-label="Buscar">Buscar</button>
+    <!-- Stats strip -->
+    <section class="stats-strip">
+        <div class="container stats-strip__inner">
+            <div class="stat-item" id="statTotal">
+                <span class="stat-item__number">--</span>
+                <span class="stat-item__label">Oportunidades</span>
             </div>
-            <div class="filters">
-                <select id="filterCategory">
-                    <option value="">Todas las categorías</option>
-                </select>
-                <select id="filterDiscipline">
-                    <option value="">Todas las disciplinas</option>
-                </select>
-                <select id="filterRegion">
+            <div class="stat-item" id="statActive">
+                <span class="stat-item__number">--</span>
+                <span class="stat-item__label">Vigentes</span>
+            </div>
+            <div class="stat-item" id="statSources">
+                <span class="stat-item__number">--</span>
+                <span class="stat-item__label">Fuentes</span>
+            </div>
+        </div>
+    </section>
+
+    <main class="container main-content">
+        <!-- Sidebar filters -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar__header">
+                <h2>Filtros</h2>
+                <button class="sidebar__clear" id="clearFilters">Limpiar</button>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-group__label">Categoría</label>
+                <div class="filter-chips" id="filterCategory"></div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-group__label">Disciplina</label>
+                <div class="filter-chips" id="filterDiscipline"></div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-group__label">Comunidad</label>
+                <select id="filterRegion" class="filter-select">
                     <option value="">Toda España</option>
                 </select>
-                <label class="checkbox-label">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-toggle">
                     <input type="checkbox" id="filterActive" checked>
-                    Solo oportunidades vigentes
+                    <span class="filter-toggle__slider"></span>
+                    <span class="filter-toggle__text">Solo vigentes</span>
                 </label>
             </div>
-        </section>
+        </aside>
 
-        <!-- Stats bar -->
-        <section class="stats-bar" id="statsBar">
-            <span id="statsTotal">Cargando...</span>
-        </section>
+        <!-- Results area -->
+        <section class="results-area">
+            <div class="results-header">
+                <p class="results-count" id="resultsCount">Cargando...</p>
+                <button class="mobile-filter-btn" id="mobileFilterBtn">Filtros</button>
+            </div>
 
-        <!-- Results -->
-        <section class="results" id="results">
-            <div class="loading" id="loading">Buscando oportunidades...</div>
-        </section>
+            <div class="results-grid" id="results">
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Buscando oportunidades...</p>
+                </div>
+            </div>
 
-        <!-- Pagination -->
-        <div class="pagination" id="pagination"></div>
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </section>
     </main>
 
-    <footer>
-        <div class="container">
-            <p>NoraCenter &mdash; Agregador de oportunidades culturales en España</p>
-            <p class="footer-note">
-                La información se recopila automáticamente de fuentes públicas oficiales.
-                Verifica siempre los datos en la fuente original antes de presentar tu solicitud.
-            </p>
+    <!-- Opportunity detail modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <button class="modal__close" id="modalClose">&times;</button>
+            <div class="modal__content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container footer__inner">
+            <div class="footer__brand">
+                <h3 class="footer__logo">Nora<span>Center</span></h3>
+                <p>Agregador de oportunidades culturales en España</p>
+            </div>
+            <div class="footer__info">
+                <p>La información se recopila automáticamente de fuentes públicas oficiales.</p>
+                <p>Verifica siempre los datos en la fuente original antes de presentar tu solicitud.</p>
+            </div>
         </div>
     </footer>
 
